@@ -2,6 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const rp = require('request-promise');
 const Blockchain = require('./blockchain/blockchain');
+const cors = require('cors');
+
 
 const app = express();
 const port = process.argv[2];
@@ -10,6 +12,8 @@ const credentialChain = new Blockchain();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cors());
+
 
 /* VIEW BLOCKCHAIN */
 app.get('/blockchain', function(req, res) {
