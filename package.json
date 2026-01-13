@@ -1,7 +1,7 @@
 {
-  "name": "CredentialChain",
+  "name": "credentialchain",
   "version": "1.0.0",
-  "description": "Custom Blockchain Credential Verification System",
+  "description": "Blockchain-based Academic Credential Verification System",
   "main": "networkNode.js",
   "scripts": {
     "start": "node networkNode.js 3001"

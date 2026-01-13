@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CredentialChain Explorer</title>
+</head>
+<body>
+  <h1>Blockchain Explorer</h1>
+
+  <input id="q" placeholder="Block Hash / Credential ID / Matric No">
+  <button onclick="block()">Block</button>
+  <button onclick="cred()">Credential</button>
+  <button onclick="student()">Student</button>
+
+  <pre id="out"></pre>
+
+  <script>
+    const API="http://localhost:3001";
+    const show=d=>out.innerText=JSON.stringify(d,null,2);
+    function block(){fetch(API+"/block/"+q.value).then(r=>r.json()).then(show)}
+    function cred(){fetch(API+"/credential/"+q.value).then(r=>r.json()).then(show)}
+    function student(){fetch(API+"/student/"+q.value).then(r=>r.json()).then(show)}
+  </script>
+</body>
+</html>

@@ -1,28 +1,22 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 const rp = require('request-promise');
 const Blockchain = require('./blockchain/blockchain');
-const cors = require('cors');
-
 
 const app = express();
 const port = process.argv[2];
-
-const credentialChain = new Blockchain();
+const chain = new Blockchain();
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors());
 
-
 /* VIEW BLOCKCHAIN */
-app.get('/blockchain', function(req, res) {
-  res.send(credentialChain);
-});
+app.get('/blockchain', (req, res) => res.json(chain));
 
 /* ISSUE CREDENTIAL */
-app.post('/issue-credential', function(req, res) {
-  const blockIndex = credentialChain.createNewCredential(
+app.post('/issue-credential', (req, res) => {
+  const index = chain.createNewCredential(
     req.body.studentName,
     req.body.matricNo,
     req.body.course,
@@ -30,120 +24,72 @@ app.post('/issue-credential', function(req, res) {
     req.body.year
   );
 
-  res.json({
-    note: `Credential will be added to block ${blockIndex}`
-  });
+  if (!index) return res.status(400).json({ error: 'Incomplete data' });
+  res.json({ note: `Credential will be added to block ${index}` });
 });
 
-/* MINE BLOCK */
-app.get('/mine', function(req, res) {
-  const lastBlock = credentialChain.getLastBlock();
-  const previousBlockHash = lastBlock['hash'];
+/* MINE */
+app.get('/mine', (req, res) => {
+  const last = chain.getLastBlock();
+  const nonce = chain.proofOfWork(last.hash, {
+    credentials: chain.pendingCredentials,
+    index: last.index + 1
+  });
 
-  const currentBlockData = {
-    credentials: credentialChain.pendingCredentials,
-    index: lastBlock['index'] + 1
-  };
+  const hash = chain.hashBlock(last.hash, {
+    credentials: chain.pendingCredentials,
+    index: last.index + 1
+  }, nonce);
 
-  const nonce = credentialChain.proofOfWork(previousBlockHash, currentBlockData);
-  const blockHash = credentialChain.hashBlock(previousBlockHash, currentBlockData, nonce);
+  const block = chain.createNewBlock(nonce, last.hash, hash);
+  res.json({ note: 'Block mined', block });
+});
 
-  const newBlock = credentialChain.createNewBlock(
-    nonce,
-    previousBlockHash,
-    blockHash
+/* VERIFY */
+app.post('/verify-credential', (req, res) => {
+  const cred = chain.verifyCredential(req.body.matricNo);
+  res.json(cred ? { valid: true, credential: cred } : { valid: false });
+});
+
+/* LAB 9 – CONSENSUS */
+app.get('/consensus', (req, res) => {
+  const promises = chain.networkNodes.map(url =>
+    rp({ uri: url + '/blockchain', json: true })
   );
 
-  res.json({
-    note: 'New credential block mined successfully',
-    block: newBlock
-  });
-});
+  Promise.all(promises).then(blockchains => {
+    let maxLength = chain.chain.length;
+    let newChain = null;
 
-/* VERIFY CREDENTIAL */
-app.post('/verify-credential', function(req, res) {
-  const credential = credentialChain.verifyCredential(req.body.matricNo);
-
-  if (credential) {
-    res.json({
-      valid: true,
-      credential
+    blockchains.forEach(bc => {
+      if (bc.chain.length > maxLength && chain.chainIsValid(bc.chain)) {
+        maxLength = bc.chain.length;
+        newChain = bc.chain;
+      }
     });
-  } else {
-    res.json({
-      valid: false,
-      message: 'Credential not found'
-    });
-  }
-});
 
-/* REGISTER NODE */
-app.post('/register-node', function(req, res) {
-  const newNodeUrl = req.body.newNodeUrl;
-
-  if (
-    credentialChain.networkNodes.indexOf(newNodeUrl) === -1 &&
-    credentialChain.currentNodeUrl !== newNodeUrl
-  ) {
-    credentialChain.networkNodes.push(newNodeUrl);
-  }
-
-  res.json({ note: 'Node registered successfully.' });
-});
-
-/* REGISTER AND BROADCAST NODE */
-app.post('/register-and-broadcast-node', function(req, res) {
-  const newNodeUrl = req.body.newNodeUrl;
-
-  if (credentialChain.networkNodes.indexOf(newNodeUrl) === -1) {
-    credentialChain.networkNodes.push(newNodeUrl);
-  }
-
-  const regNodesPromises = [];
-  credentialChain.networkNodes.forEach(networkNodeUrl => {
-    const requestOptions = {
-      uri: networkNodeUrl + '/register-node',
-      method: 'POST',
-      body: { newNodeUrl },
-      json: true
-    };
-    regNodesPromises.push(rp(requestOptions));
-  });
-
-  Promise.all(regNodesPromises).then(() => {
-    const bulkRegisterOptions = {
-      uri: newNodeUrl + '/register-nodes-bulk',
-      method: 'POST',
-      body: {
-        allNetworkNodes: [
-          ...credentialChain.networkNodes,
-          credentialChain.currentNodeUrl
-        ]
-      },
-      json: true
-    };
-    return rp(bulkRegisterOptions);
-  }).then(() => {
-    res.json({ note: 'New node registered with network successfully.' });
-  });
-});
-
-/* REGISTER NODES BULK */
-app.post('/register-nodes-bulk', function(req, res) {
-  const allNetworkNodes = req.body.allNetworkNodes;
-
-  allNetworkNodes.forEach(networkNodeUrl => {
-    if (
-      credentialChain.networkNodes.indexOf(networkNodeUrl) === -1 &&
-      credentialChain.currentNodeUrl !== networkNodeUrl
-    ) {
-      credentialChain.networkNodes.push(networkNodeUrl);
+    if (newChain) {
+      chain.chain = newChain;
+      res.json({ note: 'Chain replaced', chain: chain.chain });
+    } else {
+      res.json({ note: 'Current chain is valid', chain: chain.chain });
     }
   });
-
-  res.json({ note: 'Bulk registration successful.' });
 });
 
-app.listen(port, function() {
-  console.log(`CredentialChain node running on port ${port}`);
-});
+/* LAB 10 – EXPLORER ROUTES */
+app.get('/block/:hash', (req, res) =>
+  res.json({ block: chain.getBlock(req.params.hash) })
+);
+
+app.get('/credential/:id', (req, res) =>
+  res.json(chain.getCredential(req.params.id))
+);
+
+app.get('/student/:matricNo', (req, res) =>
+  res.json(chain.getStudentData(req.params.matricNo))
+);
+
+app.listen(port, () =>
+  console.log(`CredentialChain running on port ${port}`)
+);

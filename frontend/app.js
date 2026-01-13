@@ -1,8 +1,13 @@
 const API = "http://localhost:3001";
+const resultBox = document.getElementById("result");
+
+function display(data) {
+  resultBox.textContent = JSON.stringify(data, null, 2);
+}
 
 /* ISSUE CREDENTIAL */
 async function issueCredential() {
-  const data = {
+  const payload = {
     studentName: document.getElementById("studentName").value,
     matricNo: document.getElementById("matricNo").value,
     course: document.getElementById("course").value,
@@ -13,19 +18,16 @@ async function issueCredential() {
   const res = await fetch(`${API}/issue-credential`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data)
+    body: JSON.stringify(payload)
   });
 
-  const result = await res.json();
-  document.getElementById("issueResult").innerText = result.note || result.error;
+  display(await res.json());
 }
 
 /* MINE BLOCK */
 async function mineBlock() {
   const res = await fetch(`${API}/mine`);
-  const result = await res.json();
-  document.getElementById("mineResult").innerText =
-    JSON.stringify(result, null, 2);
+  display(await res.json());
 }
 
 /* VERIFY CREDENTIAL */
@@ -38,7 +40,5 @@ async function verifyCredential() {
     body: JSON.stringify({ matricNo })
   });
 
-  const result = await res.json();
-  document.getElementById("verifyResult").innerText =
-    JSON.stringify(result, null, 2);
+  display(await res.json());
 }

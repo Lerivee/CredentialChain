@@ -4,13 +4,12 @@ const { v4: uuidv4 } = require('uuid');
 function Blockchain() {
   this.chain = [];
   this.pendingCredentials = [];
-  this.currentNodeUrl = process.argv[3];
   this.networkNodes = [];
 
   this.createNewBlock(100, '0', '0');
 }
 
-/* CREATE NEW BLOCK */
+/* CREATE BLOCK */
 Blockchain.prototype.createNewBlock = function(nonce, previousBlockHash, hash) {
   const newBlock = {
     index: this.chain.length + 1,
@@ -31,15 +30,13 @@ Blockchain.prototype.getLastBlock = function() {
   return this.chain[this.chain.length - 1];
 };
 
-/* CREATE NEW CREDENTIAL */
+/* CREATE CREDENTIAL */
 Blockchain.prototype.createNewCredential = function(
-  studentName,
-  matricNo,
-  course,
-  degree,
-  year
+  studentName, matricNo, course, degree, year
 ) {
-  const newCredential = {
+  if (!studentName || !matricNo || !course || !degree || !year) return null;
+
+  const credential = {
     credentialId: uuidv4().split('-').join(''),
     studentName,
     matricNo,
@@ -48,15 +45,13 @@ Blockchain.prototype.createNewCredential = function(
     year
   };
 
-  this.pendingCredentials.push(newCredential);
-  return this.getLastBlock()['index'] + 1;
+  this.pendingCredentials.push(credential);
+  return this.getLastBlock().index + 1;
 };
 
 /* HASH BLOCK */
 Blockchain.prototype.hashBlock = function(previousBlockHash, currentBlockData, nonce) {
-  const dataAsString =
-    previousBlockHash + nonce.toString() + JSON.stringify(currentBlockData);
-  return sha256(dataAsString);
+  return sha256(previousBlockHash + nonce + JSON.stringify(currentBlockData));
 };
 
 /* PROOF OF WORK */
@@ -68,23 +63,78 @@ Blockchain.prototype.proofOfWork = function(previousBlockHash, currentBlockData)
     nonce++;
     hash = this.hashBlock(previousBlockHash, currentBlockData, nonce);
   }
-
   return nonce;
 };
 
 /* VERIFY CREDENTIAL */
 Blockchain.prototype.verifyCredential = function(matricNo) {
-  let foundCredential = null;
-
+  let found = null;
   this.chain.forEach(block => {
-    block.credentials.forEach(cred => {
-      if (cred.matricNo === matricNo) {
-        foundCredential = cred;
+    block.credentials.forEach(c => {
+      if (c.matricNo === matricNo) found = c;
+    });
+  });
+  return found;
+};
+
+/* LAB 9 – CHAIN VALIDATION */
+Blockchain.prototype.chainIsValid = function(blockchain) {
+  let valid = true;
+
+  for (let i = 1; i < blockchain.length; i++) {
+    const current = blockchain[i];
+    const prev = blockchain[i - 1];
+
+    const hash = this.hashBlock(
+      prev.hash,
+      { credentials: current.credentials, index: current.index },
+      current.nonce
+    );
+
+    if (hash.substring(0, 4) !== '0000') valid = false;
+    if (current.previousBlockHash !== prev.hash) valid = false;
+  }
+
+  const genesis = blockchain[0];
+  if (
+    genesis.nonce !== 100 ||
+    genesis.previousBlockHash !== '0' ||
+    genesis.hash !== '0' ||
+    genesis.credentials.length !== 0
+  ) valid = false;
+
+  return valid;
+};
+
+/* LAB 10 – GETTERS */
+Blockchain.prototype.getBlock = function(hash) {
+  return this.chain.find(b => b.hash === hash);
+};
+
+Blockchain.prototype.getCredential = function(id) {
+  let credential = null;
+  let block = null;
+
+  this.chain.forEach(b => {
+    b.credentials.forEach(c => {
+      if (c.credentialId === id) {
+        credential = c;
+        block = b;
       }
     });
   });
 
-  return foundCredential;
+  return { credential, block };
+};
+
+Blockchain.prototype.getStudentData = function(matricNo) {
+  const creds = [];
+  this.chain.forEach(b => {
+    b.credentials.forEach(c => {
+      if (c.matricNo === matricNo) creds.push(c);
+    });
+  });
+  return { credentials: creds, total: creds.length };
 };
 
 module.exports = Blockchain;

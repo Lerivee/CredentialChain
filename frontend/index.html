@@ -5,36 +5,41 @@
   <title>CredentialChain</title>
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
+
   <h1>CredentialChain</h1>
-  <p>Blockchain-based Academic Credential Verification System</p>
 
-  <!-- ISSUE CREDENTIAL -->
-  <section>
-    <h2>Issue Credential (Admin)</h2>
-    <input id="studentName" placeholder="Student Name" />
-    <input id="matricNo" placeholder="Matric Number" />
-    <input id="course" placeholder="Course" />
-    <input id="degree" placeholder="Degree" />
-    <input id="year" placeholder="Year" />
-    <button onclick="issueCredential()">Issue Credential</button>
-    <p id="issueResult"></p>
-  </section>
+  <div class="container">
 
-  <!-- MINE -->
-  <section>
-    <h2>Mine Credential Block</h2>
-    <button onclick="mineBlock()">Mine Block</button>
-    <pre id="mineResult"></pre>
-  </section>
+    <!-- ISSUE CREDENTIAL -->
+    <div class="card">
+      <h3>Issue Credential</h3>
+      <input id="studentName" placeholder="Student Name" />
+      <input id="matricNo" placeholder="Matric Number" />
+      <input id="course" placeholder="Course" />
+      <input id="degree" placeholder="Degree" />
+      <input id="year" placeholder="Year" />
+      <button onclick="issueCredential()">Issue Credential</button>
+    </div>
 
-  <!-- VERIFY -->
-  <section>
-    <h2>Verify Credential</h2>
-    <input id="verifyMatric" placeholder="Matric Number" />
-    <button onclick="verifyCredential()">Verify</button>
-    <pre id="verifyResult"></pre>
-  </section>
+    <!-- MINE BLOCK -->
+    <div class="card">
+      <h3>Mine Block</h3>
+      <button onclick="mineBlock()">Mine</button>
+    </div>
+
+    <!-- VERIFY CREDENTIAL -->
+    <div class="card">
+      <h3>Verify Credential</h3>
+      <input id="verifyMatric" placeholder="Matric Number" />
+      <button onclick="verifyCredential()">Verify</button>
+    </div>
+
+    <!-- RESULT OUTPUT -->
+    <pre id="result"></pre>
+
+  </div>
 
   <script src="app.js"></script>
 </body>
