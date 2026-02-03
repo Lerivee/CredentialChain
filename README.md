@@ -50,9 +50,14 @@ Issuing and verification must be done on the same network
 
 **👩🏽‍💻 Author**
 
-**Valerie Onoja — VUG/SEN/23/8840 ***
-**Ihunweze Lucy — VUG/SEN/23/9243 ***
-**Abumere Caren — VUG/SEN/23/9000 ***
-**Okeke Chiamaka — VUG/SEN/23/9740 ***
-**Ahenjir Nater — VUG/SEN/23/9628 ***
-**Aharanwa Divine — VUG/SEN/23/10388***
+**Valerie Onoja — VUG/SEN/23/8840**
+
+**Ihunweze Lucy — VUG/SEN/23/9243**
+
+**Abumere Caren — VUG/SEN/23/9000**
+
+**Okeke Chiamaka — VUG/SEN/23/9740**
+
+**Ahenjir Nater — VUG/SEN/23/9628**
+
+**Aharanwa Divine — VUG/SEN/23/10388**
