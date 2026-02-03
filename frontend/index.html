@@ -6,8 +6,6 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 
-
-
 <body>
 
   <h1>CredentialChain</h1>
@@ -21,14 +19,8 @@
       <input id="matricNo" placeholder="Matric Number" />
       <input id="course" placeholder="Course" />
       <input id="degree" placeholder="Degree" />
-      <input id="year" placeholder="Year" />
+      <input id="year" placeholder="Year" type="number" />
       <button onclick="issueCredential()">Issue Credential</button>
-    </div>
-
-    <!-- MINE BLOCK -->
-    <div class="card">
-      <h3>Mine Block</h3>
-      <button onclick="mineBlock()">Mine</button>
     </div>
 
     <!-- VERIFY CREDENTIAL -->
@@ -38,7 +30,7 @@
       <button onclick="verifyCredential()">Verify</button>
     </div>
 
-    <!-- RESULT OUTPUT -->
+    <!-- RESULT -->
     <pre id="result"></pre>
 
   </div>
