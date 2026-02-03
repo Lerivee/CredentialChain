@@ -202,11 +202,10 @@ const contractABI = [
   }
 ];
 
-async function connectBlockchain() {
-  if (contract) return;
 
+async function connectBlockchain() {
   if (!window.ethereum) {
-    alert("❌ MetaMask not installed");
+    alert("MetaMask is not installed");
     return;
   }
 
@@ -224,6 +223,7 @@ async function connectBlockchain() {
 /* ================= ISSUE CREDENTIAL ================= */
 
 async function issueCredential() {
+  console.log("Issuing credential...");
   try {
     await connectBlockchain();
 
@@ -295,3 +295,5 @@ async function verifyCredential() {
     alert("❌ Verification failed");
   }
 }
+window.issueCredential = issueCredential;
+window.verifyCredential = verifyCredential;
