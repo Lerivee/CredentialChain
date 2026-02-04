@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CredentialChain</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <h1>CredentialChain</h1>
+
+  <div class="container">
+
+    <!-- VERIFY CREDENTIAL -->
+    <div class="card">
+      <h3>Verify Credential</h3>
+      <input id="verifyMatric" placeholder="Matric Number" />
+      <button onclick="verifyCredential()">Verify</button>
+      <a href="student.html">Add Credential Here</a>
+    </div>
+
+    <!-- RESULT -->
+    <pre id="result"></pre>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>
